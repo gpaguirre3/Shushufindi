@@ -1,0 +1,142 @@
+<header class="cabecera">
+  <div class="contenedor">
+    <h1>Recaudación · Consulta masiva de deudores</h1>
+    <p>Carga un Excel con las cédulas y descarga un ZIP con la captura del Total Acumulado de cada una.</p>
+  </div>
+</header>
+
+<main class="contenedor">
+  <section class="tarjeta">
+    <div class="tarjeta-titulo">
+      <h2>1. Cargar cédulas</h2>
+      <a class="enlace" [href]="urlPlantilla" download>Descargar plantilla</a>
+    </div>
+
+    <label
+      class="zona"
+      [class.activa]="arrastrando()"
+      (dragover)="sobre($event, true)"
+      (dragleave)="sobre($event, false)"
+      (drop)="soltar($event)"
+    >
+      <input type="file" accept=".xlsx,.xlsm,.csv" (change)="elegir($event)" hidden />
+      @if (archivo(); as a) {
+        <strong>{{ a.name }}</strong>
+        <span class="tenue">{{ (a.size / 1024).toFixed(1) }} KB</span>
+      } @else {
+        <strong>Arrastra aquí el Excel o haz clic para elegirlo</strong>
+        <span class="tenue">
+          .xlsx o .csv · columna "Cédula" (si no hay encabezado se usa la primera columna)
+        </span>
+      }
+    </label>
+
+    @if (error()) {
+      <p class="alerta">{{ error() }}</p>
+    }
+
+    <div class="acciones">
+      @if (archivo()) {
+        <button class="boton secundario" type="button" (click)="quitarArchivo()">Quitar</button>
+      }
+      <button class="boton" type="button" [disabled]="!archivo() || enviando()" (click)="iniciar()">
+        {{ enviando() ? 'Enviando…' : 'Iniciar consulta' }}
+      </button>
+    </div>
+  </section>
+
+  @if (lote(); as l) {
+    <section class="tarjeta">
+      <div class="tarjeta-titulo">
+        <h2>2. {{ l.archivo }}</h2>
+        <span class="insignia" [attr.data-estado]="l.estado">{{ etiquetaLote[l.estado] }}</span>
+      </div>
+
+      <div class="progreso" role="progressbar" [attr.aria-valuenow]="porcentaje()" aria-valuemin="0" aria-valuemax="100">
+        <div class="barra" [style.width.%]="porcentaje()"></div>
+      </div>
+      <p class="tenue">
+        {{ l.actual }} de {{ l.total }} cédulas ({{ porcentaje() }} %)
+        @if (l.estado === 'en_cola') { · esperando a que termine otro lote }
+        @if (l.estado === 'procesando' && l.actual === 0) { · iniciando sesión en el sistema (≈1 min) }
+      </p>
+
+      <div class="contadores">
+        <div><span>{{ l.conteo.ok }}</span>Consultadas</div>
+        <div><span>{{ l.conteo.sin_datos }}</span>Sin registros</div>
+        <div class="malo"><span>{{ l.conteo.error }}</span>Errores</div>
+      </div>
+
+      @if (l.error) {
+        <p class="alerta">{{ l.error }}</p>
+      }
+
+      <div class="acciones">
+        @if (activo()) {
+          <button class="boton secundario" type="button" (click)="cancelar()">Cancelar</button>
+        }
+        @if (l.zip) {
+          <a class="boton" [href]="urlZip(l.id)" download>Descargar ZIP</a>
+        }
+      </div>
+
+      @if (l.resultados?.length || l.pendientes?.length) {
+        <div class="tabla-scroll">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Cédula</th><th>Estado</th><th class="num">Valor</th><th>Detalle</th></tr>
+            </thead>
+            <tbody>
+              @for (r of l.resultados; track r.cedula; let i = $index) {
+                <tr>
+                  <td class="tenue">{{ i + 1 }}</td>
+                  <td class="mono">{{ r.cedula }}</td>
+                  <td><span class="insignia" [attr.data-estado]="r.estado">{{ etiquetaCedula[r.estado] }}</span></td>
+                  <td class="num mono">{{ r.valor }}</td>
+                  <td class="tenue">{{ r.detalle || r.total }}</td>
+                </tr>
+              }
+              @for (c of l.pendientes; track c; let i = $index) {
+                <tr class="pendiente">
+                  <td class="tenue">{{ (l.resultados?.length ?? 0) + i + 1 }}</td>
+                  <td class="mono">{{ c }}</td>
+                  <td><span class="insignia">{{ activo() ? 'Pendiente' : 'No consultada' }}</span></td>
+                  <td></td><td></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+
+  @if (historial().length) {
+    <section class="tarjeta">
+      <h2>Historial</h2>
+      <div class="tabla-scroll">
+        <table>
+          <thead>
+            <tr><th>Fecha</th><th>Archivo</th><th class="num">Cédulas</th><th>Estado</th><th></th></tr>
+          </thead>
+          <tbody>
+            @for (h of historial(); track h.id) {
+              <tr [class.seleccionado]="h.id === lote()?.id">
+                <td>{{ h.creado | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ h.archivo }}</td>
+                <td class="num">{{ h.actual }}/{{ h.total }}</td>
+                <td><span class="insignia" [attr.data-estado]="h.estado">{{ etiquetaLote[h.estado] }}</span></td>
+                <td class="fila-acciones">
+                  <button class="enlace" type="button" (click)="abrir(h.id)">Ver</button>
+                  @if (h.zip) {
+                    <a class="enlace" [href]="urlZip(h.id)" download>ZIP</a>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</main>

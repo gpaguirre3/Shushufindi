@@ -1,0 +1,176 @@
+:root {
+  --fondo: #f3f5f8;
+  --tarjeta: #ffffff;
+  --texto: #1d2733;
+  --tenue: #66727f;
+  --borde: #dde3ea;
+  --primario: #1f4e78;
+  --primario-hover: #173b5c;
+  --ok: #1d7a46;
+  --ok-fondo: #e3f4ea;
+  --aviso: #8a5a00;
+  --aviso-fondo: #fdf1d8;
+  --malo: #b42318;
+  --malo-fondo: #fde8e6;
+  --info-fondo: #e6eef7;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font: 15px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+h1, h2 { margin: 0; line-height: 1.25; }
+h1 { font-size: 1.4rem; }
+h2 { font-size: 1.05rem; margin-bottom: 0.75rem; }
+
+.contenedor { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+
+.cabecera {
+  background: var(--primario);
+  color: #fff;
+  padding: 24px 0;
+  margin-bottom: 24px;
+  p { margin: 4px 0 0; opacity: 0.85; }
+}
+
+.tarjeta {
+  background: var(--tarjeta);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.tarjeta-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  h2 { margin-bottom: 0.75rem; word-break: break-all; }
+}
+
+.zona {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 32px 16px;
+  border: 2px dashed var(--borde);
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  &:hover, &.activa { border-color: var(--primario); background: var(--info-fondo); }
+}
+
+.tenue { color: var(--tenue); font-size: 0.9em; }
+.mono { font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; }
+
+.alerta {
+  background: var(--malo-fondo);
+  color: var(--malo);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 12px 0 0;
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+  &:empty { display: none; }
+}
+
+.boton {
+  display: inline-block;
+  border: 1px solid var(--primario);
+  background: var(--primario);
+  color: #fff;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  &:hover:not(:disabled) { background: var(--primario-hover); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  &.secundario { background: transparent; color: var(--primario); }
+  &.secundario:hover { background: var(--info-fondo); }
+}
+
+.enlace {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--primario);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.progreso {
+  height: 10px;
+  background: var(--fondo);
+  border-radius: 999px;
+  overflow: hidden;
+  .barra { height: 100%; background: var(--primario); transition: width 0.4s; }
+}
+
+.contadores {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+  div {
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--tenue);
+    font-size: 0.85rem;
+  }
+  span { display: block; font-size: 1.5rem; font-weight: 700; color: var(--texto); }
+  .malo span { color: var(--malo); }
+}
+
+.insignia {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--fondo);
+  color: var(--tenue);
+  &[data-estado='ok'], &[data-estado='listo'] { background: var(--ok-fondo); color: var(--ok); }
+  &[data-estado='sin_datos'], &[data-estado='cancelado'] { background: var(--aviso-fondo); color: var(--aviso); }
+  &[data-estado='error'] { background: var(--malo-fondo); color: var(--malo); }
+  &[data-estado='procesando'], &[data-estado='en_cola'] { background: var(--info-fondo); color: var(--primario); }
+}
+
+.tabla-scroll { overflow-x: auto; max-height: 420px; overflow-y: auto; margin: 16px 0 12px; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--borde); text-align: left; vertical-align: top; }
+  th { position: sticky; top: 0; background: var(--tarjeta); color: var(--tenue); font-weight: 600; }
+  .num { text-align: right; }
+  tr.pendiente td { opacity: 0.6; }
+  tr.seleccionado td { background: var(--info-fondo); }
+}
+
+.fila-acciones { display: flex; gap: 12px; justify-content: flex-end; }
+
+
+@media (max-width: 560px) {
+  .contadores { grid-template-columns: 1fr; }
+}
